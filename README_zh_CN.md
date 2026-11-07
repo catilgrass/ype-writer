@@ -64,6 +64,12 @@ ype_check(rule: "examples/rule.toml", path: "examples/article.md")
 ype_check(rule: "readme-review.toml", path: "README.md")
 ```
 
+### 可视化报告
+
+浏览器端会在每次 `ype_check` 后渲染一张卡片，显示得分、段落数和警告数；点“查看报告”会切到 **文章审查报告** 面板，绘制评分环、逐段得分条、规则表和警告列表。卡片与面板读取同一份结构化投影（`presentationMeta`），打开面板不会产生额外的 Host 调用。
+
+如果这个版本是在 DSH 运行期间新增的客户端部分，需要重启一次 DSH 进程：客户端模块注册表会在进程内缓存“该包是否声明了客户端”。重启后，下一次检查就会出现卡片。
+
 ### 临时规则
 
 如果 `rule` 指向的不是合法 TOML——Markdown 审稿规范、写坏的规则、损坏的文件——工具会把它转成一份合法规则：文件里写明的审查要求（哪怕是散文或 Markdown）会被保留，损坏的 TOML 会被修复，剩下的从文章推断。检查随即用这份规则运行，并在报告的 "Temporary rule" 下列出它，同时追加一条警告说明规则是生成还是修复的。草稿不会写入磁盘。这会多花一次模型调用（最多两次，第一次校验失败时），适用于不方便在仓库里保留规则文件的一次性审校。可在插件配置里用 `autoDraftRules: false` 关闭。
@@ -236,8 +242,8 @@ def check(text: str):
 
 - **零依赖**：只使用 Node 内置模块和本仓库内的文件。`lib/toml.js` 是一个 TOML 子集解析器，支持表、表数组、点号键、多行字符串、内联表、数字和日期（以源文本返回）。
 - **只用公开 API**：通过 `ctx.tools.register` 注册，通过 `ctx.llm.stream` 调用模型，从不写会话日志或触碰私有状态。
-- **可测试**：`lib/` 按职责拆分（TOML → 规则校验 → 评分数学 → 模型调用 → Python → 引擎 → 工具入口）。47 个 `node --test` 用例在无网络的情况下覆盖解析、校验、公式、聚合与容错。
-- **无 UI**：结果是文本报告。也可以在同一 bundle 中加一个 Client 模块作为浏览器面板，把 `value.paragraphs` / `value.rules` 渲染成表格。
+- **可测试**：`lib/` 按职责拆分（TOML → 规则校验 → 评分数学 → 模型调用 → Python → 引擎 → 工具入口）。48 个 `node --test` 用例在无网络的情况下覆盖解析、校验、公式、聚合与容错。
+- **浏览器端**：`lib/client.js` 声明 `dsh.client`，注册 `ype_check` 工具卡片与 `ype-review` 主面板，并通过 shell 的语言服务做中英文案。面板读取 `presentationMeta`，不解析 Markdown 报告。
 
 已知限制：
 

@@ -68,6 +68,12 @@ Try it on this README:
 ype_check(rule: "readme-review.toml", path: "README.md")
 ```
 
+### Visual report
+
+The browser half renders a card after each `ype_check` with the score, paragraph count, and warning count; "Open report" selects the **Article Review Report** panel, which draws the score ring, per-paragraph score bars, the rule table, and warnings. Card and panel read one structured projection (`presentationMeta`), so opening the panel costs no extra Host call.
+
+If this version added the client half while DSH was already running, restart the DSH process once: the client module registry caches a package's client declaration for the process lifetime. After the restart the card appears on the next check.
+
 ### Temporary rules
 
 If `rule` points at something that is not valid TOML — a Markdown review spec, a near-miss rule, a broken file — the tool turns it into a valid rule: it keeps the requirements the file states (even in prose or Markdown), repairs a malformed TOML, and infers the rest from the article. The check then runs with that rule, prints it under "Temporary rule" in the report, and adds a warning saying whether the rule was generated or repaired. The draft is never written to disk. This costs one extra model call (two at most, if the first draft fails validation) and is meant for one-off reviews where committing a rule file is not possible. Disable it with `autoDraftRules: false` in the plugin config.
@@ -240,8 +246,8 @@ Every session receives the whole article, so token cost is roughly article token
 
 - **Zero dependencies**: only Node built-ins and files in this repository. `lib/toml.js` is a TOML subset parser covering tables, arrays of tables, dotted keys, multi-line strings, inline tables, numbers, and dates (returned as source text).
 - **Public APIs only**: registers through `ctx.tools.register`, calls models through `ctx.llm.stream`, never writes session logs or touches private state.
-- **Testable**: `lib/` is split by responsibility (TOML → rule validation → scoring math → model calls → Python → engine → tool entry). 47 `node --test` cases cover parsing, validation, formulas, aggregation, and failure tolerance without network access.
-- **No UI**: the result is a text report. A browser panel could be added as a Client module in the same bundle, rendering `value.paragraphs` / `value.rules` as a table.
+- **Testable**: `lib/` is split by responsibility (TOML → rule validation → scoring math → model calls → Python → engine → tool entry). 48 `node --test` cases cover parsing, validation, formulas, aggregation, and failure tolerance without network access.
+- **Browser half**: `lib/client.js` declares `dsh.client`, registers a `ype_check` tool card and the `ype-review` main panel, and localizes through the shell's locale service. The panel reads `presentationMeta`, never the Markdown report.
 
 Known limitations:
 
