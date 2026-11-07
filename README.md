@@ -1,5 +1,7 @@
 # Ype! Writer (`dsh-ype-writer`)
 
+> 本提供了 [中文版本](./README_zh_CN.md)！
+
 A DSH article auditor that scores an article paragraph by paragraph against a `rule.toml`. Every rule opens its own LLM session, so the scoring standard is reproducible, reviewable, and committable.
 
 - **Audience / anti-audience**: two independent sessions score audience fit and anti-audience legibility, from which a measured "pandering index" is derived and compared with the target.
@@ -15,19 +17,33 @@ Requirements:
 - Node.js 20 or newer
 - Python 3 only if you use script or filter rules
 
-Install from GitHub:
+### From the DSH CLI
 
-```text
-plugin_manager(action: "install_bundle", target: "https://github.com/catilgrass/ype-writer")
+Install into the profile you boot (replace `web` with your profile name):
+
+```bash
+dsh plugin --profile web add github:catilgrass/ype-writer
 ```
 
-The loader hot-loads the bundle, so `ype_check` appears in every session using that profile, and the `ype-writer` skill joins the skill catalog when the profile has one. Verify by listing tools in a new session. Remove with:
+The package is added to `dsh.profile.bundles` automatically. HMR applies it to the running profile; otherwise restart `dsh web`. Remove it with:
 
-```text
-plugin_manager(action: "remove_bundle", target: "dsh-ype-writer")
+```bash
+dsh plugin --profile web remove dsh-ype-writer
 ```
 
-Working from a local checkout? Point `target` at its absolute path instead and reinstall after edits.
+### From the DSH web UI
+
+1. Open **Plugins** in the sidebar and click **Add plugin**.
+2. Enter `https://github.com/catilgrass/ype-writer`.
+3. Click **Install** and wait for "Installed".
+
+### Ask an agent
+
+Paste this into a session that can use the plugin manager (Creator mode, or full access):
+
+> Install the DSH bundle from https://github.com/catilgrass/ype-writer into this profile with `plugin_manager` (`install_bundle`), then confirm `ype_check` appears in the tool list and `ype-writer` in the skill catalog. Finish with a smoke check: `ype_check(template: "tutorial-guide", text: "This is a smoke test.")`
+
+The loader hot-loads the bundle, so `ype_check` appears in every session using that profile, and the `ype-writer` skill joins the skill catalog when the profile has one. Working from a local checkout? Use `target` with the absolute path instead, and reinstall after edits.
 
 ## Use
 
@@ -35,12 +51,12 @@ Working from a local checkout? Point `target` at its absolute path instead and r
 ype_check(rule: "examples/rule.toml", path: "examples/article.md")
 ```
 
-| Argument | Required | Meaning |
-| --- | --- | --- |
-| `rule` | one of rule/template | Path to the rule file, absolute or relative to the session working directory |
-| `template` | one of rule/template | Bundled template name such as `health-science` or `zh_CN/health-science` |
-| `text` | one of text/path | Full article text |
-| `path` | one of text/path | Path to the article file |
+| Argument   | Required             | Meaning                                                                      |
+| ---------- | -------------------- | ---------------------------------------------------------------------------- |
+| `rule`     | one of rule/template | Path to the rule file, absolute or relative to the session working directory |
+| `template` | one of rule/template | Bundled template name such as `health-science` or `zh_CN/health-science`     |
+| `text`     | one of text/path     | Full article text                                                            |
+| `path`     | one of text/path     | Path to the article file                                                     |
 
 The tool returns a Markdown report (`value.report`) plus structured per-paragraph and per-rule results for programmatic use. The report keeps every rule's raw score so the final score can be recomputed.
 
@@ -78,15 +94,15 @@ On load, the plugin registers a `ype-writer` skill with the profile's skill regi
 
 `templates/` ships seven copy-ready rule templates:
 
-| Template | Use for | Main guardrails |
-| --- | --- | --- |
-| `health-science.toml` | Patient and family health explainers | cure claims, fear, replacing medication, pseudoscience |
-| `science-explainer.toml` | Science for general readers | correlation as causation, hype, unexplained jargon |
-| `product-review.toml` | Consumer product reviews | undisclosed interests, fake testing, one-sided praise |
-| `tutorial-guide.toml` | Setup and step-by-step guides | skipped steps, unrunnable commands, missing versions |
-| `opinion-piece.toml` | Editorials and argument essays | straw men, personal attacks, fact/judgment blur |
-| `news-report.toml` | Event reporting and interviews | unverified facts, clickbait, single sources |
-| `code-review.toml` | Pull-request and snippet reviews | hard-coded secrets, swallowed errors, leaks |
+| Template                 | Use for                              | Main guardrails                                        |
+| ------------------------ | ------------------------------------ | ------------------------------------------------------ |
+| `health-science.toml`    | Patient and family health explainers | cure claims, fear, replacing medication, pseudoscience |
+| `science-explainer.toml` | Science for general readers          | correlation as causation, hype, unexplained jargon     |
+| `product-review.toml`    | Consumer product reviews             | undisclosed interests, fake testing, one-sided praise  |
+| `tutorial-guide.toml`    | Setup and step-by-step guides        | skipped steps, unrunnable commands, missing versions   |
+| `opinion-piece.toml`     | Editorials and argument essays       | straw men, personal attacks, fact/judgment blur        |
+| `news-report.toml`       | Event reporting and interviews       | unverified facts, clickbait, single sources            |
+| `code-review.toml`       | Pull-request and snippet reviews     | hard-coded secrets, swallowed errors, leaks            |
 
 Chinese copies live in `templates/zh_CN/` under the same file names; tests keep the two sets in sync. When the skill loads, the absolute path of the installed template directory is appended to its instructions, so an agent can read the templates without guessing where the package lives.
 
@@ -125,15 +141,15 @@ path = "scripts/no_first_person.py"   # relative to rule.toml; or inline code = 
 
 Field constraints:
 
-| Field | Constraint |
-| --- | --- |
-| `audience` | Non-empty string, or a non-empty string array (joined with `; `) |
-| `anti_audience` | Same; omitted or empty means the LLM infers it |
-| `pandering` | Number from 1 to 5 |
-| `audience_llm` / `anti_audience_llm` / `llm` | Integer from 1 to 8 |
-| `scope` | `paragraph` (default) or `article`; scripts only accept `paragraph` |
-| `[[scripts]]` | Exactly one of `path` / `code`; a supplied `path` must exist |
-| `[[filters]]` | Exactly one of `path` / `code`; the script defines `filter(text)` and returns the text to check |
+| Field                                        | Constraint                                                                                      |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `audience`                                   | Non-empty string, or a non-empty string array (joined with `; `)                                |
+| `anti_audience`                              | Same; omitted or empty means the LLM infers it                                                  |
+| `pandering`                                  | Number from 1 to 5                                                                              |
+| `audience_llm` / `anti_audience_llm` / `llm` | Integer from 1 to 8                                                                             |
+| `scope`                                      | `paragraph` (default) or `article`; scripts only accept `paragraph`                             |
+| `[[scripts]]`                                | Exactly one of `path` / `code`; a supplied `path` must exist                                    |
+| `[[filters]]`                                | Exactly one of `path` / `code`; the script defines `filter(text)` and returns the text to check |
 
 Unknown fields, wrong types, and TOML syntax errors fail before any model call, with the file name and line/column. Limits: 20 rules per kind, 10 scripts.
 
@@ -187,17 +203,17 @@ One Python process is started per script and `check` is called once per paragrap
 
 `config` is optional; unknown fields fail activation so typos cannot be silently ignored.
 
-| Field | Default | Meaning |
-| --- | --- | --- |
+| Field                | Default               | Meaning                                                            |
+| -------------------- | --------------------- | ------------------------------------------------------------------ |
 | `provider` / `model` | current session model | Override the route used by scoring sessions (must be set together) |
-| `reasoningEffort` | session value | Override reasoning effort |
-| `maxParagraphs` | `80` | Maximum paragraphs scored; the rest are truncated with a warning |
-| `maxParagraphChars` | `2000` | Maximum characters per paragraph; longer ones are clipped |
-| `maxConcurrentLlm` | `6` | Maximum concurrent model sessions |
-| `llmTimeoutMs` | `180000` | Timeout for one model session |
-| `maxOutputTokens` | `12000` | Output limit for one model session |
-| `python` | `python3` | Interpreter for script rules |
-| `scriptTimeoutMs` | `20000` | Timeout for one script |
+| `reasoningEffort`    | session value         | Override reasoning effort                                          |
+| `maxParagraphs`      | `80`                  | Maximum paragraphs scored; the rest are truncated with a warning   |
+| `maxParagraphChars`  | `2000`                | Maximum characters per paragraph; longer ones are clipped          |
+| `maxConcurrentLlm`   | `6`                   | Maximum concurrent model sessions                                  |
+| `llmTimeoutMs`       | `180000`              | Timeout for one model session                                      |
+| `maxOutputTokens`    | `12000`               | Output limit for one model session                                 |
+| `python`             | `python3`             | Interpreter for script rules                                       |
+| `scriptTimeoutMs`    | `20000`               | Timeout for one script                                             |
 
 ## Cost
 
