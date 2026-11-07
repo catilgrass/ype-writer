@@ -20,7 +20,8 @@
     "examples",
     "README.md",
     "skills",
-    "templates"
+    "templates",
+    "filters"
   ],
   "keywords": [
     "deepseek-harness",

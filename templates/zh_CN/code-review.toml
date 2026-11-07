@@ -1,0 +1,80 @@
+# 代码审查规则模板。
+# code 过滤器只保留代码围栏里的内容，围栏外的正文不参与评分；
+# 没有围栏的纯源码文件会整篇当作代码处理。
+# 用法：复制到文章同目录改名 rule.toml，按当前代码改写 [target] 与具体规则。
+
+# 只保留代码围栏里的内容；规则审的是代码片段，而不是围栏外的说明。
+[[filters]]
+name = "代码围栏"
+code = '''
+import re
+
+FENCE = re.compile(r"^[ \t]{0,3}(?:```|~~~)[^\n]*\n([\s\S]*?)^[ \t]{0,3}(?:```|~~~)[^\n]*$", re.MULTILINE)
+
+def filter(text):
+    blocks = [block.strip() for block in FENCE.findall(text)]
+    return "\n\n".join(blocks) if blocks else text.strip()
+'''
+
+[target]
+audience = "正在 review 一个 PR 的开发者：想看到具体的、行级的问题，而不是泛泛的架构感想"
+anti_audience = "只关心功能能不能上线的非技术干系人"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "硬编码密钥"
+description = '代码里出现明文的密码、token、API key 或私钥'
+llm = 1
+
+[[anti_patterns]]
+name = "吞掉错误"
+description = '捕获异常后静默忽略，或操作失败仍返回成功，既不记录也不抛出'
+llm = 1
+
+[[donts]]
+name = "资源泄漏"
+instruction = '打开文件、socket、锁或事务后，没有在包括错误路径在内的所有路径上释放'
+llm = 1
+
+[[donts]]
+name = "魔法值"
+instruction = '使用没有解释的数字字面量或单字母命名，而上下文并不需要这样写'
+llm = 1
+
+[[donts]]
+name = "复制粘贴重复"
+instruction = '重复一段逻辑，而代码本身就表明它可以抽成函数或循环'
+llm = 1
+
+[[requirements]]
+name = "错误路径写清楚"
+instruction = '每条错误路径说明调用方或用户会看到什么结果，而不只是记了一条日志'
+scope = "paragraph"
+llm = 1
+
+[[requirements]]
+name = "边界处校验输入"
+instruction = '外部输入在进入系统的地方被校验，失败行为是可见的'
+scope = "paragraph"
+llm = 1
+
+[[requirements]]
+name = "测试或用例说明"
+instruction = '改动带有测试，或文章说明了这段代码是怎么被验证的'
+scope = "article"
+llm = 1
+
+[[scripts]]
+name = "代码块长度"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 500:
+        return 0
+    return min(5, 1 + (n - 500) // 150)
+'''

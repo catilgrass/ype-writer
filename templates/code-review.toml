@@ -1,0 +1,80 @@
+# Code-review rule template.
+# The code filter keeps only fenced code blocks, so prose around the snippet is
+# ignored; a plain source file without fences is graded as-is.
+# Copy next to the article as rule.toml, then edit [target] and the rules.
+
+# Keep only fenced code; the rules below judge the snippet, not the prose around it.
+[[filters]]
+name = "fenced code"
+code = '''
+import re
+
+FENCE = re.compile(r"^[ \t]{0,3}(?:```|~~~)[^\n]*\n([\s\S]*?)^[ \t]{0,3}(?:```|~~~)[^\n]*$", re.MULTILINE)
+
+def filter(text):
+    blocks = [block.strip() for block in FENCE.findall(text)]
+    return "\n\n".join(blocks) if blocks else text.strip()
+'''
+
+[target]
+audience = "Developers reviewing a pull request who want concrete, line-level concerns"
+anti_audience = "Non-technical stakeholders who only care whether the feature ships"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Hard-coded secrets"
+description = 'code contains a literal password, token, API key, or private key'
+llm = 1
+
+[[anti_patterns]]
+name = "Swallowed errors"
+description = 'catches an exception and silently ignores it, or reports success on a failed operation without logging or rethrowing'
+llm = 1
+
+[[donts]]
+name = "Resource leaks"
+instruction = 'opens a file, socket, lock, or transaction without releasing it on every path, including error paths'
+llm = 1
+
+[[donts]]
+name = "Magic values"
+instruction = 'uses unexplained numeric literals or single-letter names where the surrounding code needs none'
+llm = 1
+
+[[donts]]
+name = "Copy-paste duplication"
+instruction = 'repeats a block of logic that the surrounding code shows could be a function or a loop'
+llm = 1
+
+[[requirements]]
+name = "Error paths are explicit"
+instruction = 'each error path says what happens to the caller or the user, not only that it was logged'
+scope = "paragraph"
+llm = 1
+
+[[requirements]]
+name = "Inputs validated at the boundary"
+instruction = 'external input is validated where it enters, and the failure behavior is visible'
+scope = "paragraph"
+llm = 1
+
+[[requirements]]
+name = "Tests or usage notes"
+instruction = 'the change comes with tests, or the article states how the code was exercised'
+scope = "article"
+llm = 1
+
+[[scripts]]
+name = "Block length"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 500:
+        return 0
+    return min(5, 1 + (n - 500) // 150)
+'''

@@ -2,6 +2,8 @@
 # For editorials, industry commentary, and argument-driven essays.
 # Copy next to the article as rule.toml, then edit [target] and the rules.
 
+
+
 [target]
 audience = "Undecided readers in the middle: willing to hear an argument, allergic to slogans and name-calling"
 anti_audience = "Partisans on either side: they only want to hear their own side and see the other side humiliated"

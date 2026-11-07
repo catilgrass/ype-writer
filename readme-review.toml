@@ -1,0 +1,108 @@
+# Self-review rule for this repository's README.
+# Run it with:
+#   ype_check(rule: "readme-review.toml", path: "README.md")
+# The goal is a README that serves a developer deciding whether to install and
+# a writer who wants the first check to work today.
+
+# Selection script: keep prose, drop Markdown scaffolding; resolved from this file.
+[[filters]]
+name = "markdown prose"
+path = "filters/markdown.py"
+
+[target]
+audience = "two readers at once: a developer deciding whether the code and docs deserve an install, and a writer who wants to run the first check today"
+anti_audience = "readers who only want a headline verdict and skip mechanisms and limits"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Unsupported claims"
+description = 'author-voice praise ("revolutionary", "best in class") without evidence; quoting such words as an example is fine'
+llm = 1
+
+[[anti_patterns]]
+name = "Unimplemented capabilities"
+description = 'describes a UI, auto-fix, or CI feature the repository does not have'
+llm = 1
+
+[[anti_patterns]]
+name = "Install instructions only work locally"
+description = 'the primary installation instructions rely on a local filesystem path instead of the repository URL, so readers outside the machine cannot follow them'
+llm = 1
+
+[[donts]]
+name = "Jargon wall"
+instruction = 'uses three or more unexplained terms in a row (TOML, schema, pandering index, LLM session) without an intuition'
+llm = 1
+
+[[donts]]
+name = "Missing prerequisites"
+instruction = 'gives install or run steps without saying what must already be installed: the DSH plugin manager, a Node version, and whether Python is required'
+llm = 1
+
+[[donts]]
+name = "Condescending tone"
+instruction = "mocks readers who get stuck or implies setup failures are the reader's fault" 
+llm = 1
+
+[[requirements]]
+name = "Copy-paste install"
+instruction = 'shows the exact plugin_manager command with the GitHub URL, lists prerequisites, and says how to verify the tool appeared'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "First check in one screen"
+instruction = 'shows how to run a check (rule or template) and what the report contains before deep reference material'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Serves both readers"
+instruction = 'a developer can see the architecture, scoring, and tests; a writer can install, run a template check, and read the report'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Honest limits"
+instruction = 'states at least two real limits: LLM variance, rule quality driving the ceiling, cost, truncation, English prompts, or the Python dependency'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Rule schema is shown"
+instruction = 'includes a working rule.toml example and a table of field constraints'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Commands are concrete"
+instruction = 'paragraphs that give commands name the tool and the arguments; the expected result may be stated in the same paragraph or the one directly after it'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "Paragraph length"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 900:
+        return 0
+    return min(5, 1 + (n - 900) // 300)
+'''
+
+[[scripts]]
+name = "Hype words outside quotes"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|"[^"]*"|「[^」]*」')
+HYPE = re.compile(r"revolutionary|best in class|game changer|guaranteed|effortless", re.IGNORECASE)
+
+def check(text):
+    return 5 if HYPE.search(QUOTED.sub("", text)) else 0
+'''

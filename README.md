@@ -9,17 +9,25 @@ A DSH article auditor that scores an article paragraph by paragraph against a `r
 
 ## Install and load
 
-This repository is a DSH bundle (`package.json` → `dsh.bundle.patch` → `cordis.patch.yml`). Install it with the plugin manager:
+Requirements:
+
+- DSH with the plugin manager available (the `plugin_manager` tool or Creator mode)
+- Node.js 20 or newer
+- Python 3 only if you use script or filter rules
+
+Install from GitHub:
 
 ```text
-plugin_manager(action: "install_bundle", target: "/home/catilgrass/Projects/ype-writer")
+plugin_manager(action: "install_bundle", target: "https://github.com/catilgrass/ype-writer")
 ```
 
-The loader hot-loads it, so `ype_check` appears in every session using that profile. Remove it with:
+The loader hot-loads the bundle, so `ype_check` appears in every session using that profile, and the `ype-writer` skill joins the skill catalog when the profile has one. Verify by listing tools in a new session. Remove with:
 
 ```text
 plugin_manager(action: "remove_bundle", target: "dsh-ype-writer")
 ```
+
+Working from a local checkout? Point `target` at its absolute path instead and reinstall after edits.
 
 ## Use
 
@@ -36,11 +44,39 @@ ype_check(rule: "examples/rule.toml", path: "examples/article.md")
 
 The tool returns a Markdown report (`value.report`) plus structured per-paragraph and per-rule results for programmatic use. The report keeps every rule's raw score so the final score can be recomputed.
 
+Try it on this README:
+
+```text
+ype_check(rule: "readme-review.toml", path: "README.md")
+```
+
+## Filters
+
+Filters narrow the review to the copy that matters. Each filter is a Python script defining `filter(text)` that returns only the text to check; the returned string is split into paragraphs once and shared by every session. Comment-only reviews and Markdown stripping use the same contract.
+
+```toml
+[[filters]]
+name = "comments only"
+code = '''
+def filter(text):
+    return "\n\n".join(line.strip() for line in text.splitlines() if line.strip().startswith("//"))
+'''
+```
+
+Three selection scripts ship in `filters/`: `comments.py` (only `//` lines), `markdown.py` (prose without Markdown scaffolding; fence markers dropped, contents kept), and `code.py` (only fenced code). Reference one by path, relative to the rule file:
+
+```toml
+[[filters]]
+path = "filters/markdown.py"
+```
+
+Filters run in declared order. A chain that selects nothing fails the check instead of silently scoring an empty article, and the report lists which filters ran and how many characters they removed.
+
 ## Skill and templates
 
 On load, the plugin registers a `ype-writer` skill with the profile's skill registry (profiles without a skills service simply get the tool). The skill documents the recommended workflow: **write the article → copy a template into `rule.toml` → adapt it → run `ype_check` → iterate on the report**, plus rule design guidance, how to read the report, and common mistakes.
 
-`templates/` ships six copy-ready rule templates:
+`templates/` ships seven copy-ready rule templates:
 
 | Template | Use for | Main guardrails |
 | --- | --- | --- |
@@ -50,6 +86,7 @@ On load, the plugin registers a `ype-writer` skill with the profile's skill regi
 | `tutorial-guide.toml` | Setup and step-by-step guides | skipped steps, unrunnable commands, missing versions |
 | `opinion-piece.toml` | Editorials and argument essays | straw men, personal attacks, fact/judgment blur |
 | `news-report.toml` | Event reporting and interviews | unverified facts, clickbait, single sources |
+| `code-review.toml` | Pull-request and snippet reviews | hard-coded secrets, swallowed errors, leaks |
 
 Chinese copies live in `templates/zh_CN/` under the same file names; tests keep the two sets in sync. When the skill loads, the absolute path of the installed template directory is appended to its instructions, so an agent can read the templates without guessing where the package lives.
 
@@ -96,6 +133,7 @@ Field constraints:
 | `audience_llm` / `anti_audience_llm` / `llm` | Integer from 1 to 8 |
 | `scope` | `paragraph` (default) or `article`; scripts only accept `paragraph` |
 | `[[scripts]]` | Exactly one of `path` / `code`; a supplied `path` must exist |
+| `[[filters]]` | Exactly one of `path` / `code`; the script defines `filter(text)` and returns the text to check |
 
 Unknown fields, wrong types, and TOML syntax errors fail before any model call, with the file name and line/column. Limits: 20 rules per kind, 10 scripts.
 
@@ -157,7 +195,7 @@ One Python process is started per script and `check` is called once per paragrap
 | `maxParagraphChars` | `2000` | Maximum characters per paragraph; longer ones are clipped |
 | `maxConcurrentLlm` | `6` | Maximum concurrent model sessions |
 | `llmTimeoutMs` | `180000` | Timeout for one model session |
-| `maxOutputTokens` | `6000` | Output limit for one model session |
+| `maxOutputTokens` | `12000` | Output limit for one model session |
 | `python` | `python3` | Interpreter for script rules |
 | `scriptTimeoutMs` | `20000` | Timeout for one script |
 
@@ -178,7 +216,7 @@ Every session receives the whole article, so token cost is roughly article token
 
 - **Zero dependencies**: only Node built-ins and files in this repository. `lib/toml.js` is a TOML subset parser covering tables, arrays of tables, dotted keys, multi-line strings, inline tables, numbers, and dates (returned as source text).
 - **Public APIs only**: registers through `ctx.tools.register`, calls models through `ctx.llm.stream`, never writes session logs or touches private state.
-- **Testable**: `lib/` is split by responsibility (TOML → rule validation → scoring math → model calls → Python → engine → tool entry). 31 `node --test` cases cover parsing, validation, formulas, aggregation, and failure tolerance without network access.
+- **Testable**: `lib/` is split by responsibility (TOML → rule validation → scoring math → model calls → Python → engine → tool entry). 38 `node --test` cases cover parsing, validation, formulas, aggregation, and failure tolerance without network access.
 - **No UI**: the result is a text report. A browser panel could be added as a Client module in the same bundle, rendering `value.paragraphs` / `value.rules` as a table.
 
 Known limitations:

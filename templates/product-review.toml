@@ -2,6 +2,8 @@
 # For consumer reviews and buying guides (devices, appliances, software, courses).
 # Copy next to the article as rule.toml, then edit [target] and the rules.
 
+
+
 [target]
 audience = "Shoppers deciding whether to buy: they want to know if it is worth it and whether it fits them, not a spec sheet"
 anti_audience = "Brand marketing teams and affiliate copywriters: people who sell by praising only, trashing rivals, and keeping tests vague"

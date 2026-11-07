@@ -2,6 +2,8 @@
 # For explaining a concept, study, or phenomenon to readers without a science background.
 # Copy next to the article as rule.toml, then edit [target] and the rules.
 
+
+
 [target]
 audience = "Curious general readers with no science background: willing to read long pieces on science, but unable to tell correlation from causation or one study from a consensus"
 anti_audience = "Researchers in the same field: especially sensitive to loose analogies, imprecise claims, and overstated evidence"

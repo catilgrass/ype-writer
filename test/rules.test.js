@@ -75,3 +75,23 @@ test('reports TOML syntax errors as rule errors with the file name', () => {
     (error) => error instanceof RuleError && error.message.includes('/tmp/bad.toml') && /TOML parse failed/.test(error.message),
   );
 });
+
+test('parses script filters', () => {
+  const spec = parseRuleSource(`
+[target]
+audience = "x"
+
+[[filters]]
+name = "comments"
+code = "def filter(text): return text.upper()"
+`);
+  assert.equal(spec.filters.length, 1);
+  assert.equal(spec.filters[0].name, 'comments');
+  assert.equal(spec.filters[0].code, 'def filter(text): return text.upper()');
+});
+
+test('rejects bad filter definitions', () => {
+  assert.throws(() => parseRuleSource('[target]\naudience = "x"\n[[filters]]\nkind = "markdown"\n'), /unknown field/);
+  assert.throws(() => parseRuleSource('[target]\naudience = "x"\n[[filters]]\n'), /path or code/);
+  assert.throws(() => parseRuleSource('[target]\naudience = "x"\n[[filters]]\nname = ""\ncode = "x"\n'), /empty/);
+});

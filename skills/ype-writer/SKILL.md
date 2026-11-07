@@ -59,6 +59,28 @@ def check(text):
 '''
 ```
 
+## Filters
+
+Filters are selection scripts: each one receives the whole text and returns only the regions that deserve review. Run them when the document contains copy the rules should not judge, such as raw code, generated sections, or a Markdown wrapper.
+
+```toml
+[[filters]]
+name = "comments only"
+code = '''
+def filter(text):
+    return "\n\n".join(line.strip() for line in text.splitlines() if line.strip().startswith("//"))
+'''
+```
+
+Three selection scripts ship in `filters/`: `comments.py`, `markdown.py`, and `code.py`. Reference one by path, relative to the rule file:
+
+```toml
+[[filters]]
+path = "filters/markdown.py"
+```
+
+Filters run in declared order; the returned string is split into paragraphs once and shared by every session. A chain that selects nothing fails the check rather than scoring an empty text. The report lists the filters that ran and the characters they removed.
+
 ## Rule-writing guidance
 
 - Write an anti-pattern as something a reader can point at, not as a value statement.

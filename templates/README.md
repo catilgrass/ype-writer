@@ -10,8 +10,11 @@ Templates are starting points, not finished rules. Copy one next to the article,
 | `tutorial-guide.toml` | Setup and step-by-step guides | skipped steps, unrunnable commands, missing versions |
 | `opinion-piece.toml` | Editorials and argument essays | straw men, personal attacks, fact/judgment blur |
 | `news-report.toml` | Event reporting and interviews | unverified facts, clickbait, single sources |
+| `code-review.toml` | Pull-request and snippet reviews | hard-coded secrets, swallowed errors, leaks |
 
 Chinese copies live under `zh_CN/` with the same file names. The English and Chinese sets are validated to stay in sync.
+
+Filters are optional selection scripts. `code-review.toml` ships one inline: it keeps only fenced code blocks so the rules judge the snippet, not the prose around it. Prose templates leave filtering out; when the source is Markdown, add a filter that points at `filters/markdown.py` or ships the same script inline.
 
 ## Use
 

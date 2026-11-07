@@ -193,3 +193,49 @@ test('a rule whose sessions all fail drops out with warnings, not a failed check
   // (2.75 + 3.25) / 2 = 3.0
   assert.equal(result.score, 3);
 });
+
+test('filters run before paragraph splitting', { skip: !hasPython }, async () => {
+  const llm = createFakeLlm();
+  const spec = {
+    ...SPEC,
+    filters: [
+      {
+        id: 'F1',
+        name: 'paragraphs only',
+        path: undefined,
+        code: 'def filter(text):\n    return "\\n\\n".join(line for line in text.splitlines() if line.startswith("First") or line.startswith("Second"))\n',
+      },
+    ],
+  };
+  const result = await runCheck({
+    ctx: makeCtx(llm),
+    route: { provider: 'fake', model: 'fake' },
+    spec,
+    article: { text: '# Title\n\nFirst paragraph.\n\n```js\nconst x = 1;\n```\n\nSecond paragraph.' },
+    config: CONFIG,
+  });
+
+  assert.deepEqual(result.meta.filters, ['paragraphs only']);
+  assert.ok(result.meta.filterRemovedChars > 0);
+  assert.equal(result.meta.paragraphCount, 2);
+  assert.match(result.paragraphs[0].preview, /^First paragraph\./);
+  assert.match(result.paragraphs[1].preview, /^Second paragraph\./);
+});
+
+test('script filters can rewrite the text', { skip: !hasPython }, async () => {
+  const llm = createFakeLlm();
+  const spec = {
+    ...SPEC,
+    filters: [{ id: 'F1', name: 'upper', kind: 'script', code: 'def filter(text):\n    return text.upper()\n' }],
+  };
+  const result = await runCheck({
+    ctx: makeCtx(llm),
+    route: { provider: 'fake', model: 'fake' },
+    spec,
+    article: ARTICLE,
+    config: CONFIG,
+  });
+
+  assert.deepEqual(result.meta.filters, ['upper']);
+  assert.match(result.paragraphs[0].preview, /^INDEXES ARE NOT FREE/);
+});
