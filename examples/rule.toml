@@ -1,0 +1,40 @@
+# Example rule file: a short piece for backend engineers.
+# Run the example with:
+#   ype_check(rule: "examples/rule.toml", path: "examples/article.md")
+# Relative script paths resolve from the directory containing this file.
+
+[target]
+audience = "Backend engineers with 3-5 years of experience who know SQL but not query optimizers"
+anti_audience = "Product managers with no database experience"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Disclaimer"
+description = 'paragraph contains "for reference only", "not advice", or a similar disclaimer'
+llm = 1
+
+[[donts]]
+name = "Empty adjectives"
+instruction = 'uses "ultimate", "perfect", "revolutionary", or another adjective that carries no information'
+llm = 2
+
+[[donts]]
+name = "Jargon dump"
+instruction = 'uses three or more unexplained technical terms in a row without giving an intuitive explanation'
+scope = "paragraph"
+
+[[requirements]]
+name = "Concepts land on examples"
+instruction = 'every abstract concept comes with a concrete query or data example'
+scope = "paragraph"
+
+[[requirements]]
+name = "Actionable conclusion"
+instruction = 'the article ends with an executable conclusion, not an open-ended reflection'
+scope = "article"
+
+[[scripts]]
+name = "First person"
+path = "scripts/no_first_person.py"

@@ -1,0 +1,77 @@
+# Tutorial-guide rule template.
+# For installation, setup, and step-by-step how-to articles.
+# Copy next to the article as rule.toml, then edit [target] and the rules.
+
+[target]
+audience = "First-time beginners: they follow the steps literally and give up at the first failure"
+anti_audience = "Experienced users: they only want the critical steps and gotchas, and find long explanations noisy"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Skipped prerequisites"
+description = 'omits a required precondition (OS, version, permissions, dependencies) so a reader following the steps fails immediately'
+llm = 1
+
+[[anti_patterns]]
+name = "Pseudocode posing as a command"
+description = 'presents placeholders, pseudocode, or commands with ellipses as copy-paste-ready, without saying what must be replaced'
+llm = 1
+
+[[anti_patterns]]
+name = "Missing version or platform"
+description = 'gives steps that depend on a specific version or operating system but never states the applicable range'
+llm = 1
+
+[[donts]]
+name = "Unstated background"
+instruction = 'assumes the reader already knows an unmentioned tool, command, or concept, without a minimal explanation'
+llm = 1
+
+[[donts]]
+name = "Uncommented code dumps"
+instruction = 'pastes a large block of code or config without explaining the key lines and why they are needed'
+llm = 1
+
+[[donts]]
+name = "Dismissive hand-off"
+instruction = 'sends the reader away with "just search for it", "there are many tutorials online", or "debug it yourself"'
+llm = 1
+
+[[requirements]]
+name = "Prerequisites up front"
+instruction = 'opens with prerequisites: OS, version, permissions, installed dependencies, and expected time'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Every step runs and shows its result"
+instruction = 'each step can be followed as written and says what the reader should see; explain how to tell it failed'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "One common failure covered"
+instruction = 'covers at least one likely error a beginner will hit and gives an order of diagnosis'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "One action per paragraph"
+instruction = 'each paragraph carries one action or one decision, not several operations at once'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "Paragraph length"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 500:
+        return 0
+    return min(5, 1 + (n - 500) // 150)
+'''

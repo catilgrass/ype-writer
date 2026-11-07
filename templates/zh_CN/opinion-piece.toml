@@ -1,0 +1,89 @@
+# 观点评论规则模板
+# 适用：时评、行业观察、立场鲜明的议论文。
+# 用法：复制到文章同目录改名 rule.toml，按当前文章改写 [target] 与具体规则。
+
+[target]
+audience = "尚未站队的中间读者：愿意听道理，反感喊口号和扣帽子"
+anti_audience = "按立场站队的极端支持者与反对者：只想听顺耳的话、看对手出丑"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "稻草人"
+description = '把反方观点歪曲成更容易攻击的版本再反驳，而不是回应对方最强的论据'
+llm = 1
+
+[[anti_patterns]]
+name = "人身攻击与扣帽子"
+description = '用攻击对方身份、动机或人品代替论证，如"拿钱办事""非蠢即坏"'
+llm = 1
+
+[[anti_patterns]]
+name = "编造论据"
+description = '用查无实据的数据、案例或"大家都这么说"支撑论点'
+llm = 1
+
+[[donts]]
+name = "用情绪代替论证"
+instruction = '靠反问、感叹、排比句和道德指控推进论证，缺少理由与证据'
+llm = 1
+
+[[donts]]
+name = "事实与判断混写"
+instruction = '把自己的推测、价值判断写成客观事实，读者分不清哪句有依据'
+llm = 1
+
+[[donts]]
+name = "绝对化结论"
+instruction = '用"必然""注定""毫无例外"下结论，不给反例留空间'
+llm = 1
+
+[[requirements]]
+name = "开头亮明论点"
+instruction = '开头一段说清本文主张什么、反对什么，不要绕到结尾才表态'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "正面回应最强反方"
+instruction = '呈现反方最强的一条论据，并正面回应，而不是只打弱论点'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "区分事实与判断"
+instruction = '数据、事实与作者判断用不同措辞区分开，读者能看出哪句是观点'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "论断有理由"
+instruction = '每个段落的核心论断都给出理由、证据或可检验的推理'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "段落长度"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 170:
+        return 0
+    return min(5, 1 + (n - 170) // 30)
+'''
+
+[[scripts]]
+name = "绝对化词只在引号里"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|「[^」]*」|"[^"]*"')
+ABSOLUTE = re.compile(r"必然|注定|毫无例外|绝对|百分之百")
+
+def check(text):
+    return 5 if ABSOLUTE.search(QUOTED.sub("", text)) else 0
+'''

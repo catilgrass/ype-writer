@@ -1,0 +1,99 @@
+# 健康科普规则模板
+# 适用：面向患者、家属、中老年读者的健康/医学解释类文章。
+# 用法：复制到文章同目录改名 rule.toml，按当前文章改写 [target] 与具体规则。
+
+[target]
+audience = "关心健康的普通读者：可能是患者或家属，没有医学训练，想弄明白该不该信、该不该买"
+anti_audience = "靠健康焦虑卖货的人：保健品会销讲师、伪科学营销号、冒充专家的推销员"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "作者替产品许疗效"
+description = '以作者自己的口吻（不是作为反面话术引用）宣称某种保健食品、普通食品或偏方能治病、逆转病情、替代药物'
+llm = 1
+
+[[anti_patterns]]
+name = "拿病吓人、拿孝道压人"
+description = '用并发症后果逼迫读者购买、停药或转发，如"不吃就等着截肢""舍不得花钱就是不孝"'
+llm = 1
+
+[[anti_patterns]]
+name = "假权威与假案例"
+description = '以肯定口吻使用查无实据的专家、机构、患者故事或统计数据来支撑效果'
+llm = 1
+
+[[anti_patterns]]
+name = "具体推销与导流"
+description = '推荐具体品牌、产品名、店铺、价格或购买链接，或引导读者私信、加微信、扫码下单；泛指的医院、药店不算'
+llm = 1
+
+[[donts]]
+name = "绝对化表述"
+instruction = '用"根治""药到病除""立竿见影""百分百有效""永不复发"等绝对化说法描述健康结果（作为骗术例子引用除外）'
+llm = 1
+
+[[donts]]
+name = "贬低正规医疗"
+instruction = '暗示医院只会赚钱、西药伤身、医生不可信，从而抬高保健品或偏方'
+llm = 1
+
+[[donts]]
+name = "伪科学原理"
+instruction = '把"排毒""酸碱体质""量子""细胞修复"当作医学原理来讲，而不是当作要警惕的话术列举'
+llm = 1
+
+[[donts]]
+name = "让读者自行停药"
+instruction = '建议或暗示读者停用、减量正在服用的药物或胰岛素，且没有同时强调必须由医生决定'
+llm = 1
+
+[[requirements]]
+name = "区分保健食品与药品"
+instruction = '讲清保健食品不是药物、不能代替药物治疗疾病，并说明保健食品与药品的批准文号（蓝帽子/国食健注、国药准字）不同'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "关键结论有可核实的来源"
+instruction = '疗效、风险、筛查建议等关键结论引用可核实的来源（诊疗指南、药监局、卫健委、同行评议研究），而不是"专家说"'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "给出就医与急救边界"
+instruction = '写清什么情况必须去医院、出现哪些症状要立刻就医，而不是让读者自己在家判断'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "建议能落到动作"
+instruction = '讲"怎么做"的段落给出读者今天就能执行的具体动作（吃什么、怎么测、何时复诊），而不是只讲道理'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "段落长度"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 170:
+        return 0
+    return min(5, 1 + (n - 170) // 30)
+'''
+
+[[scripts]]
+name = "疗效词只在引号里"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|「[^」]*」|"[^"]*"')
+CURE = re.compile(r"根治|包治|药到病除|立竿见影|百分百|彻底治愈|断根|神效|特效药|一吃就灵")
+
+def check(text):
+    return 5 if CURE.search(QUOTED.sub("", text)) else 0
+'''

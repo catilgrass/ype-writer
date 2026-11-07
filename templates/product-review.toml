@@ -1,0 +1,89 @@
+# Product-review rule template.
+# For consumer reviews and buying guides (devices, appliances, software, courses).
+# Copy next to the article as rule.toml, then edit [target] and the rules.
+
+[target]
+audience = "Shoppers deciding whether to buy: they want to know if it is worth it and whether it fits them, not a spec sheet"
+anti_audience = "Brand marketing teams and affiliate copywriters: people who sell by praising only, trashing rivals, and keeping tests vague"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Undisclosed interests"
+description = 'received a sample, sponsorship, commission, or free access and does not disclose it while still writing as an independent reviewer'
+llm = 1
+
+[[anti_patterns]]
+name = "Fabricated testing"
+description = 'invents tests, data, sales figures, or user feedback to prove the product is good'
+llm = 1
+
+[[anti_patterns]]
+name = "Only the good side"
+description = 'lists only strengths and a buy recommendation, with no weaknesses, limits, or people who should not buy'
+llm = 1
+
+[[donts]]
+name = "Empty adjectives"
+instruction = 'uses "ultimate", "top-tier", "perfect", or "stunning" instead of a concrete observation'
+llm = 1
+
+[[donts]]
+name = "Rival bashing"
+instruction = 'disparages another brand or product without comparable conditions and evidence'
+llm = 1
+
+[[donts]]
+name = "Spec sheet as review"
+instruction = 'repeats the spec sheet as the conclusion, with no hands-on experience or comparison'
+llm = 1
+
+[[requirements]]
+name = "Testing conditions"
+instruction = 'says how it was tested: environment, duration, sample, and comparison; if there was no test, say this is a hands-on first impression'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Pros, cons, and who should skip it"
+instruction = 'gives strengths, weaknesses, and who should and should not buy'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Disclosure"
+instruction = 'states where the product came from, whether payment was involved, and any commercial relationship'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Claims rest on observations"
+instruction = 'each judgment maps to a reproducible observation (what was tested, what was seen), not an impression'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "Paragraph length"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 500:
+        return 0
+    return min(5, 1 + (n - 500) // 150)
+'''
+
+[[scripts]]
+name = "Absolute words only inside quotes"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|"[^"]*"|「[^」]*」')
+ABSOLUTE = re.compile(r"\bbest\b|#1|number one|perfect|unbeatable|no contest", re.IGNORECASE)
+
+def check(text):
+    return 5 if ABSOLUTE.search(QUOTED.sub("", text)) else 0
+'''

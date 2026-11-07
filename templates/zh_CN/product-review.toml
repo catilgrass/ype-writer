@@ -1,0 +1,89 @@
+# 产品评测规则模板
+# 适用：手机、家电、软件、课程等消费品的评测/选购指南。
+# 用法：复制到文章同目录改名 rule.toml，按当前文章改写 [target] 与具体规则。
+
+[target]
+audience = "正在做购买决定的普通消费者：想知道值不值、适不适合自己，没耐心看参数表"
+anti_audience = "品牌方市场部与带货文案：靠只说优点、拉踩竞品和模糊实测来卖货的人"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "隐瞒利益关系"
+description = '接受了送测、赞助、返佣或免费体验，却不披露，仍以独立评测口吻推荐'
+llm = 1
+
+[[anti_patterns]]
+name = "虚构实测与用户评价"
+description = '编造没有做过的测试、数据、销量或用户反馈来证明产品好'
+llm = 1
+
+[[anti_patterns]]
+name = "只夸不批"
+description = '通篇只有优点和购买建议，没有任何缺点、限制或不适用人群'
+llm = 1
+
+[[donts]]
+name = "空洞形容词"
+instruction = '用"极致""顶级""完美""惊艳"等没有信息量的形容词代替具体观察'
+llm = 1
+
+[[donts]]
+name = "拉踩竞品"
+instruction = '贬低其他品牌或产品，却不给出可比的条件和依据'
+llm = 1
+
+[[donts]]
+name = "复述参数当评测"
+instruction = '把官网参数表复述一遍就当作评测结论，没有使用体验或对照'
+llm = 1
+
+[[requirements]]
+name = "交代测试条件"
+instruction = '说明怎么测的：环境、时长、样本、对照对象；没条件实测就明确说明这是上手体验'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "优缺点与适用人群"
+instruction = '同时给出优点、缺点，以及"什么人适合买、什么人不适合买"'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "利益关系披露"
+instruction = '开头或结尾明确说明产品来源、是否收费、是否有商业合作'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "结论有观察依据"
+instruction = '每个判断都对应一个可复现的观察（测了什么、看到什么），而不是凭印象下结论'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "段落长度"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 170:
+        return 0
+    return min(5, 1 + (n - 170) // 30)
+'''
+
+[[scripts]]
+name = "绝对化词只在引号里"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|「[^」]*」|"[^"]*"')
+ABSOLUTE = re.compile(r"最强|第一|唯一|完美|无敌|吊打|碾压")
+
+def check(text):
+    return 5 if ABSOLUTE.search(QUOTED.sub("", text)) else 0
+'''

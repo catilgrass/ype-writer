@@ -1,0 +1,99 @@
+# Health-science rule template.
+# For patient, family, and older-reader health explainers.
+# Copy next to the article as rule.toml, then edit [target] and the rules.
+
+[target]
+audience = "Health-curious readers: patients or family with no medical training who want to know whether to trust a claim or a product"
+anti_audience = "People who profit from health anxiety: supplement pitchmen, pseudoscience accounts, fake experts"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Sells a cure"
+description = "claims, in the author's own voice (not as a quoted example of scam talk), that a supplement, food, or folk remedy treats disease, reverses a condition, or replaces medication"
+llm = 1
+
+[[anti_patterns]]
+name = "Fear and guilt"
+description = 'pressures the reader to buy, stop medication, or forward the piece with disease threats ("stop taking it and lose a foot", "not buying for your parents is unfilial")'
+llm = 1
+
+[[anti_patterns]]
+name = "Fake authority"
+description = 'uses unverifiable experts, institutions, patient stories, or statistics as proof, in an endorsing voice rather than as an example of a scam'
+llm = 1
+
+[[anti_patterns]]
+name = "Product pitch"
+description = 'recommends a specific brand, product, shop, price, or purchase link, or routes readers to DMs, WeChat, or a QR code; generic "pharmacy" or "hospital" is fine'
+llm = 1
+
+[[donts]]
+name = "Absolute claims"
+instruction = 'describes health outcomes with "cure", "miracle", "guaranteed", "works instantly", "permanent", or "100% effective" (quoted as scam talk is allowed)'
+llm = 1
+
+[[donts]]
+name = "Attacks medicine"
+instruction = 'implies hospitals only want money, prescription drugs damage the body, or doctors cannot be trusted, in order to elevate a supplement or folk remedy'
+llm = 1
+
+[[donts]]
+name = "Pseudoscience"
+instruction = 'presents "detox", "acid-alkaline balance", "quantum", or "cellular repair" as medical mechanisms instead of naming them as sales talk'
+llm = 1
+
+[[donts]]
+name = "Tells readers to stop medication"
+instruction = 'suggests stopping or reducing prescribed drugs or insulin without also insisting that only a doctor can decide'
+llm = 1
+
+[[requirements]]
+name = "Supplements vs drugs"
+instruction = 'states that dietary supplements are not medicine and cannot replace treatment, and distinguishes supplement approval numbers from drug approval numbers'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Checkable sources"
+instruction = 'key claims about effects, risks, or screening cite checkable sources (clinical guidelines, regulators, peer-reviewed studies), not "experts say"'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "When to see a doctor"
+instruction = 'tells the reader which situations require a doctor or emergency care instead of home judgment'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Advice becomes actions"
+instruction = 'paragraphs that explain what to do give actions the reader can take today (what to eat, how to measure, when to follow up), not only principles'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "Paragraph length"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 500:
+        return 0
+    return min(5, 1 + (n - 500) // 150)
+'''
+
+[[scripts]]
+name = "Cure words only inside quotes"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|"[^"]*"|「[^」]*」')
+CURE = re.compile(r"\bcure[sd]?\b|\bmiracle\b|guaranteed|permanent(?:ly)? cure|clinically proven|100% effective", re.IGNORECASE)
+
+def check(text):
+    return 5 if CURE.search(QUOTED.sub("", text)) else 0
+'''

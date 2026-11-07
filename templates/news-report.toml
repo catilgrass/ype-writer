@@ -1,0 +1,89 @@
+# News-report rule template.
+# For event reporting, updates, and interview pieces.
+# Copy next to the article as rule.toml, then edit [target] and the rules.
+
+[target]
+audience = "General readers following an event: they want to know what happened, who said it, and how much is confirmed"
+anti_audience = "Skimmers who only read headlines: they follow whatever emotion or suspense the title provides"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Unverified as fact"
+description = 'turns rumor, a single anonymous source, or a social post into an established fact'
+llm = 1
+
+[[anti_patterns]]
+name = "Headline distortion"
+description = 'the title or opening exaggerates or quotes the most inflammatory fragment, contradicting the body'
+llm = 1
+
+[[anti_patterns]]
+name = "Sentiment replaces facts"
+description = 'uses emotional description or a victim story in place of who, what, when, where, and the responses'
+llm = 1
+
+[[donts]]
+name = "Single-source conclusions"
+instruction = 'concludes a contested event from one source without identifying the source and its limits'
+llm = 1
+
+[[donts]]
+name = "Irrelevant privacy"
+instruction = 'publishes names, addresses, employers, or photos that are not in the public interest and identify private people'
+llm = 1
+
+[[donts]]
+name = "Statements reported as facts"
+instruction = "reports a party's statement or a pre-verification account as objective fact, without \"said\", \"claimed\", or \"according to\""
+llm = 1
+
+[[requirements]]
+name = "Sources for key facts"
+instruction = 'each key fact names its source: institution, document, person, or a checkable public record'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Confirmed vs claimed vs open"
+instruction = 'separates what is confirmed, what a party claims, and what is still being verified'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Timeline and responses"
+instruction = "gives the timeline and at least two affected parties' responses, including the accused"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "One fact per paragraph"
+instruction = 'each paragraph carries one fact or one development, not several events at once'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "Paragraph length"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 500:
+        return 0
+    return min(5, 1 + (n - 500) // 150)
+'''
+
+[[scripts]]
+name = "Clickbait words"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|"[^"]*"|「[^」]*」')
+CLICKBAIT = re.compile(r"shocking|you won'?t believe|must read|share before|stunned", re.IGNORECASE)
+
+def check(text):
+    return 5 if CLICKBAIT.search(QUOTED.sub("", text)) else 0
+'''

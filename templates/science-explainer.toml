@@ -1,0 +1,89 @@
+# Science-explainer rule template.
+# For explaining a concept, study, or phenomenon to readers without a science background.
+# Copy next to the article as rule.toml, then edit [target] and the rules.
+
+[target]
+audience = "Curious general readers with no science background: willing to read long pieces on science, but unable to tell correlation from causation or one study from a consensus"
+anti_audience = "Researchers in the same field: especially sensitive to loose analogies, imprecise claims, and overstated evidence"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Correlation sold as causation"
+description = 'turns correlational data into a causal claim without saying that it is only a correlation or that confounders were not ruled out'
+llm = 1
+
+[[anti_patterns]]
+name = "Invented studies or experts"
+description = 'cites unverifiable studies, numbers, institutions, or experts as support, in an endorsing voice'
+llm = 1
+
+[[anti_patterns]]
+name = "Headline hype"
+description = 'uses "revolutionary", "rewrites the textbook", "solved", or "definitive" for results that are preliminary or limited'
+llm = 1
+
+[[donts]]
+name = "Unexplained jargon"
+instruction = 'uses a technical term for the first time without an explanation or an intuition for what it means'
+llm = 1
+
+[[donts]]
+name = "Analogy without limits"
+instruction = 'explains a mechanism only through an analogy and never says where the analogy stops being accurate'
+llm = 1
+
+[[donts]]
+name = "Overstates the evidence"
+instruction = 'describes contested, small-sample, or animal-only findings as "science has proven"'
+llm = 1
+
+[[requirements]]
+name = "Numbers have sources"
+instruction = 'key numbers and conclusions cite a source or are explicitly framed as estimates with uncertainty'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Evidence strength"
+instruction = 'says which layer the evidence comes from: in vitro, animal, small human study, or review and consensus'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Names what is unknown"
+instruction = 'states which questions are still open and which conclusions later research could overturn'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Concept gets an example"
+instruction = 'each abstract concept comes with a concrete example or scenario the reader can picture'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "Paragraph length"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 500:
+        return 0
+    return min(5, 1 + (n - 500) // 150)
+'''
+
+[[scripts]]
+name = "Hype words only inside quotes"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|"[^"]*"|「[^」]*」')
+HYPE = re.compile(r"revolutionary|rewrites the textbook|breakthrough|100%|definitive|solved for good", re.IGNORECASE)
+
+def check(text):
+    return 5 if HYPE.search(QUOTED.sub("", text)) else 0
+'''

@@ -1,0 +1,89 @@
+# 科学解释规则模板
+# 适用：面向没有专业背景的普通读者，解释一个科学概念、研究或现象。
+# 用法：复制到文章同目录改名 rule.toml，按当前文章改写 [target] 与具体规则。
+
+[target]
+audience = "对科学好奇、没有专业背景的普通读者：愿意读长文，但分不清相关与因果、单项研究与共识"
+anti_audience = "同领域研究者：对类比、不精确表述和证据强度特别敏感"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "把相关说成因果"
+description = '仅凭相关性数据得出因果结论，却不说明这只是相关、或没有排除混杂因素'
+llm = 1
+
+[[anti_patterns]]
+name = "编造研究、数据或专家"
+description = '以肯定口吻引用查无实据的研究、数字、机构或专家来支撑观点'
+llm = 1
+
+[[anti_patterns]]
+name = "标题党式夸大"
+description = '用"颠覆""改写教科书""彻底解决""定论"等说法描述尚在研究中或证据有限的结果'
+llm = 1
+
+[[donts]]
+name = "术语首次出现不解释"
+instruction = '专业术语第一次出现时不解释、不给直觉说明，直接当作读者已经知道'
+llm = 1
+
+[[donts]]
+name = "比喻不标边界"
+instruction = '只用比喻解释机制，却不说明这个比喻在哪里不成立'
+llm = 1
+
+[[donts]]
+name = "把未定论说成定论"
+instruction = '把还有争议、样本很小或只在小鼠/体外验证的结论，写成"科学已经证明"'
+llm = 1
+
+[[requirements]]
+name = "数字与结论有出处"
+instruction = '关键数字和结论标注来源（论文、机构报告），或明确说明这是估算和不确定性'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "说明证据强度"
+instruction = '交代证据来自哪一层：体外实验、动物实验、小样本人体研究，还是综述与共识'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "讲清不知道的部分"
+instruction = '明确指出哪些问题还没有答案、哪些结论可能被后续研究推翻'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "概念配可感知的例子"
+instruction = '每个抽象概念配一个读者能感知的具体例子或场景'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "段落长度"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 170:
+        return 0
+    return min(5, 1 + (n - 170) // 30)
+'''
+
+[[scripts]]
+name = "夸大词只在引号里"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|「[^」]*」|"[^"]*"')
+HYPE = re.compile(r"颠覆|改写教科书|百分百|终极|绝对|彻底解决|一劳永逸")
+
+def check(text):
+    return 5 if HYPE.search(QUOTED.sub("", text)) else 0
+'''

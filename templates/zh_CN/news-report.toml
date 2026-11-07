@@ -1,0 +1,89 @@
+# 新闻报道规则模板
+# 适用：事件报道、进展通报、人物采访类文章。
+# 用法：复制到文章同目录改名 rule.toml，按当前文章改写 [target] 与具体规则。
+
+[target]
+audience = "关心事件进展的普通读者：想知道发生了什么、谁说的、可信度如何"
+anti_audience = "只刷标题不读正文的碎片化读者：习惯被情绪和悬念牵着走"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "未经核实当事实"
+description = '把传闻、单一匿名信源或社交平台爆料直接写成已发生的事实'
+llm = 1
+
+[[anti_patterns]]
+name = "标题党式断章取义"
+description = '标题或开头夸大、截取最刺激的片段，与正文事实不符'
+llm = 1
+
+[[anti_patterns]]
+name = "煽情细节替代事实"
+description = '用情绪化描写、受害者故事替代时间、地点、人物、回应等基本事实'
+llm = 1
+
+[[donts]]
+name = "单一信源下结论"
+instruction = '只依据一个信源就对争议事件下结论，且没有说明信源身份和局限'
+llm = 1
+
+[[donts]]
+name = "暴露无关隐私"
+instruction = '写出与公共利益无关的姓名、住址、单位、照片等可识别个人信息'
+llm = 1
+
+[[donts]]
+name = "把说法写成事实"
+instruction = '把当事方的声明、警方通报前的说法直接写成客观事实，不加"称""表示"'
+llm = 1
+
+[[requirements]]
+name = "关键事实注明来源"
+instruction = '每个关键事实注明来源（机构、文件、当事人、可核实的公开记录）'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "区分证实程度"
+instruction = '明确区分：已证实、当事方说法、尚未证实/正在核实'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "时间线与多方回应"
+instruction = '给出事件时间线，并呈现至少两个相关方的回应（含被指控方）'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "一段只讲一件事"
+instruction = '每个段落只承载一个事实或一个进展，不把多个事件混在一段'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "段落长度"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 170:
+        return 0
+    return min(5, 1 + (n - 170) // 30)
+'''
+
+[[scripts]]
+name = "标题党词"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|「[^」]*」|"[^"]*"')
+CLICKBAIT = re.compile(r"震惊|速看|删前速转|不转不是|炸裂|惊呆")
+
+def check(text):
+    return 5 if CLICKBAIT.search(QUOTED.sub("", text)) else 0
+'''

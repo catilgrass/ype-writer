@@ -1,0 +1,77 @@
+# 教程指南规则模板
+# 适用：安装配置、上手教程、操作步骤类文章。
+# 用法：复制到文章同目录改名 rule.toml，按当前文章改写 [target] 与具体规则。
+
+[target]
+audience = "第一次上手的新手：照着步骤做，卡住就会放弃"
+anti_audience = "已经熟练的老手：只想快速找到关键步骤和坑，嫌解释啰嗦"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "跳步与缺前提"
+description = '省略了必要的前置条件（系统、版本、权限、依赖），读者照做会直接失败'
+llm = 1
+
+[[anti_patterns]]
+name = "伪代码冒充可执行命令"
+description = '把不可直接运行的占位符、伪代码或省略号命令写成"复制即用"的样子，却没有说明要替换什么'
+llm = 1
+
+[[anti_patterns]]
+name = "不说明版本与平台"
+description = '给出的步骤依赖特定版本或操作系统，却通篇不说明适用边界'
+llm = 1
+
+[[donts]]
+name = "假设未说明的背景"
+instruction = '默认读者已经会某个未交代的工具、命令或概念，却不给最小必要说明'
+llm = 1
+
+[[donts]]
+name = "大段无解释的代码"
+instruction = '粘贴一大段代码或配置却不解释关键行在做什么、为什么需要'
+llm = 1
+
+[[donts]]
+name = "推卸问题"
+instruction = '用"自行百度""网上有很多教程""出问题自己查"打发读者'
+llm = 1
+
+[[requirements]]
+name = "开头列清前提"
+instruction = '文章开头列出前提：系统、版本、权限、已安装依赖、预计耗时'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "每步可执行且给预期结果"
+instruction = '每个步骤都能照着做，并说明做完应该看到什么结果、失败了怎么判断'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "常见报错与解决"
+instruction = '至少覆盖一个新手最可能遇到的报错，并给出排查顺序'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "一步只做一件事"
+instruction = '每个段落只讲一个动作或一个判断，不要把多个操作混在一段里'
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "段落长度"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 170:
+        return 0
+    return min(5, 1 + (n - 170) // 30)
+'''

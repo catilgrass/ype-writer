@@ -1,0 +1,34 @@
+{
+  "name": "dsh-ype-writer",
+  "version": "0.1.0",
+  "description": "Ype! Writer — a paragraph-level article auditor for DSH, driven by a reproducible rule.toml",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "examples",
+    "README.md",
+    "skills",
+    "templates"
+  ],
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "article",
+    "writing",
+    "review"
+  ],
+  "license": "MIT"
+}

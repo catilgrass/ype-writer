@@ -1,0 +1,6 @@
+# dsh-ype-writer bundle patch: one Host row over the web profile.
+# The row name resolves from the profile's node_modules where
+# `plugin_manager install_bundle` linked this package.
+- insert:
+    - id: ype-writer
+      name: dsh-ype-writer

@@ -1,0 +1,89 @@
+# Opinion-piece rule template.
+# For editorials, industry commentary, and argument-driven essays.
+# Copy next to the article as rule.toml, then edit [target] and the rules.
+
+[target]
+audience = "Undecided readers in the middle: willing to hear an argument, allergic to slogans and name-calling"
+anti_audience = "Partisans on either side: they only want to hear their own side and see the other side humiliated"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Straw man"
+description = 'distorts the opposing view into a weaker version and refutes that, instead of answering the strongest argument'
+llm = 1
+
+[[anti_patterns]]
+name = "Personal attacks"
+description = "attacks the opponent's identity, motives, or character instead of the argument (\"paid shill\", \"stupid or evil\")"
+llm = 1
+
+[[anti_patterns]]
+name = "Invented evidence"
+description = 'supports the thesis with unverifiable data, anecdotes, or "everyone knows"'
+llm = 1
+
+[[donts]]
+name = "Emotion instead of argument"
+instruction = 'advances the argument through rhetorical questions, exclamation, parallelism, and moral accusation rather than reasons and evidence'
+llm = 1
+
+[[donts]]
+name = "Fact and judgment blurred"
+instruction = 'writes speculation or value judgment as objective fact, so the reader cannot tell which sentence has support'
+llm = 1
+
+[[donts]]
+name = "Absolute conclusions"
+instruction = 'concludes with "inevitable", "destined", or "without exception", leaving no room for counterexamples'
+llm = 1
+
+[[requirements]]
+name = "Thesis up front"
+instruction = 'the opening states what the piece argues for and against, instead of saving the position for the end'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Answers the strongest counter"
+instruction = 'presents the strongest opposing argument and responds to it directly, not just to weak ones'
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Fact separated from judgment"
+instruction = "data and facts are worded differently from the author's judgment, so the reader can see which is which"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Claims carry reasons"
+instruction = "each paragraph's core claim comes with a reason, evidence, or checkable inference"
+scope = "paragraph"
+llm = 1
+
+[[scripts]]
+name = "Paragraph length"
+code = '''
+import re
+
+def check(text):
+    body = re.sub(r"\s+", "", text)
+    n = len(body)
+    if n <= 500:
+        return 0
+    return min(5, 1 + (n - 500) // 150)
+'''
+
+[[scripts]]
+name = "Absolute words only inside quotes"
+code = '''
+import re
+
+QUOTED = re.compile(r'“[^”]*”|"[^"]*"|「[^」]*」')
+ABSOLUTE = re.compile(r"inevitable|destined|without exception|absolutely|100%", re.IGNORECASE)
+
+def check(text):
+    return 5 if ABSOLUTE.search(QUOTED.sub("", text)) else 0
+'''
