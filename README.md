@@ -98,7 +98,7 @@ Filters run in declared order. A chain that selects nothing fails the check inst
 
 On load, the plugin registers a `ype-writer` skill with the profile's skill registry (profiles without a skills service simply get the tool). The skill documents the recommended workflow: **write the article → copy a template into `rule.toml` → adapt it → run `ype_check` → iterate on the report**, plus rule design guidance, how to read the report, and common mistakes.
 
-`templates/` ships seven copy-ready rule templates:
+`templates/` ships eight copy-ready rule templates:
 
 | Template                 | Use for                              | Main guardrails                                        |
 | ------------------------ | ------------------------------------ | ------------------------------------------------------ |
@@ -109,6 +109,7 @@ On load, the plugin registers a `ype-writer` skill with the profile's skill regi
 | `opinion-piece.toml`     | Editorials and argument essays       | straw men, personal attacks, fact/judgment blur        |
 | `news-report.toml`       | Event reporting and interviews       | unverified facts, clickbait, single sources            |
 | `code-review.toml`       | Pull-request and snippet reviews     | hard-coded secrets, swallowed errors, leaks            |
+| `write-documents.toml`   | Project documentation and user-facing copy | marketing hype, negation-first phrasing, filler |
 
 Chinese copies live in `templates/zh_CN/` under the same file names; tests keep the two sets in sync. When the skill loads, the absolute path of the installed template directory is appended to its instructions, so an agent can read the templates without guessing where the package lives.
 

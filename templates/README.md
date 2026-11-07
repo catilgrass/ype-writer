@@ -11,6 +11,7 @@ Templates are starting points, not finished rules. Copy one next to the article,
 | `opinion-piece.toml` | Editorials and argument essays | straw men, personal attacks, fact/judgment blur |
 | `news-report.toml` | Event reporting and interviews | unverified facts, clickbait, single sources |
 | `code-review.toml` | Pull-request and snippet reviews | hard-coded secrets, swallowed errors, leaks |
+| `write-documents.toml` | Project documentation and user-facing copy | marketing hype, negation-first phrasing, filler, warnings off the risk point |
 
 Chinese copies live under `zh_CN/` with the same file names. The English and Chinese sets are validated to stay in sync.
 

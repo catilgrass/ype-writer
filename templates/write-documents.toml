@@ -1,0 +1,101 @@
+# Write-documents rule template.
+# Derived from the project write-documents spec: decide the reader's action
+# first, state facts, delete filler, warn only where something breaks.
+# Copy next to the article as rule.toml, then edit [target] and the rules.
+# Markdown sources: add filters/markdown.py when the heading rule is not needed;
+# that filter drops headings, so leave it out if headings are under review.
+
+[target]
+audience = "developers and technical creators reading project documentation: they can set up an environment, want facts, commands, and paths, and act while reading"
+anti_audience = "readers who skim for promotional claims and skip the steps"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "Promise beyond capability"
+description = "claims a guaranteed outcome, perfect results, or that the product works everywhere, without stating conditions or limits"
+llm = 1
+
+[[anti_patterns]]
+name = "Negation before affirmation"
+description = "phrases such as \"not X but Y\", \"it is not A, it is B\", or \"no, it is just ...\" that force the reader to discard a wrong answer before receiving the right one"
+llm = 1
+
+[[anti_patterns]]
+name = "Manufactured tension"
+description = "uses \"must\" or \"must not\" where no real constraint exists, or turns a plain suggestion into an obligation"
+llm = 1
+
+[[donts]]
+name = "Marketing hype"
+instruction = "uses superlatives, exclamation marks, rhetorical questions, or emotional adjectives to persuade instead of stating facts"
+llm = 1
+
+[[donts]]
+name = "Empty degree words"
+instruction = "keeps \"very\", \"extremely\", \"simply\", \"just\", or \"obviously\" where they add no constraint or information"
+llm = 1
+
+[[donts]]
+name = "Evaluating the reader"
+instruction = "tells the reader the task is easy, that they should already know this, or draws the conclusion for them"
+llm = 1
+
+[[donts]]
+name = "Restating the example"
+instruction = "repeats in prose what the preceding command, example, or table already shows, or appends a summary after the example ends"
+llm = 1
+
+[[requirements]]
+name = "Headings keep their promise"
+instruction = "each heading is a plain descriptive noun phrase and the body delivers the full scope it announces"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "One point per paragraph"
+instruction = "each paragraph advances exactly one point; locating, operating, and explaining are not mixed in one paragraph"
+scope = "paragraph"
+llm = 1
+
+[[requirements]]
+name = "Action separated from reason"
+instruction = "steps and mechanism explanations are not interleaved, and a warning sits in its own paragraph or admonition"
+scope = "paragraph"
+llm = 1
+
+[[requirements]]
+name = "Observable facts"
+instruction = "claims use commands, paths, exit codes, outputs, or version numbers the reader can verify, not general descriptions"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Examples the reader can copy"
+instruction = "commands and outputs are copyable and observable; default usage comes before explicit parameters and edge cases"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Honest scope"
+instruction = "uncertain or conditional claims are marked with their scope (current version, this platform), and costs or failures are stated outright"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "Warning at the risk point"
+instruction = "a warning appears only where the reader can fail, lose data, or waste time, and it does not repeat the body text"
+scope = "article"
+llm = 1
+
+[[scripts]]
+name = "Banned symbols"
+code = '''
+import re
+
+BANNED = re.compile(r"[—–‒―−⸺⸻…·•〜～]|\s-\s")
+
+def check(text):
+    return 5 if BANNED.search(text) else 0
+'''

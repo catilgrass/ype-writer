@@ -1,0 +1,101 @@
+# 写作规范规则模板。
+# 依据项目 write-documents 写作规范提炼：先判断读者此刻要做什么，陈述事实，
+# 删掉不承载信息的话，提醒只在会出事的地方给。
+# 复制到文章同目录改名 rule.toml，按当前文章改写 [target] 与具体规则。
+# Markdown 源文件：不需要审标题时，可加 filters/markdown.py；该过滤器会去掉标题，
+# 如果标题是本轮审校重点，就不要加。
+
+[target]
+audience = "阅读项目文档的开发者和技术创作者：会装环境，需要事实、命令和路径，边读边操作"
+anti_audience = "只想看宣传承诺、跳过操作步骤的读者"
+pandering = 3
+audience_llm = 1
+anti_audience_llm = 1
+
+[[anti_patterns]]
+name = "承诺超出能力"
+description = "以作者口吻承诺一定成功、完美结果或全平台适用，却不写条件和限制"
+llm = 1
+
+[[anti_patterns]]
+name = "先否定再肯定"
+description = "使用“不是……而是……”“不，只是……”“A 不是 X，B 才是 Y”之类要求读者先否掉错误答案的句式"
+llm = 1
+
+[[anti_patterns]]
+name = "制造紧张"
+description = "在没有真实约束时使用“必须”“不能”，或把普通建议写成义务"
+llm = 1
+
+[[donts]]
+name = "营销式夸张"
+instruction = "用最高级、感叹号、反问句或情绪化形容词推销，而不是陈述事实"
+llm = 1
+
+[[donts]]
+name = "空洞程度词"
+instruction = "保留“非常”“极其”“只需”“显然”等不传达约束或信息的词"
+llm = 1
+
+[[donts]]
+name = "评价读者"
+instruction = "说任务很简单、读者应该早就知道，或替读者下结论"
+llm = 1
+
+[[donts]]
+name = "复述示例"
+instruction = "用正文重复前面的命令、示例或表格已经展示的内容，或在示例结束后补总结"
+llm = 1
+
+[[requirements]]
+name = "标题兑现承诺"
+instruction = "每个标题都是平实的说明性名词短语，正文写满标题承诺的范围"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "一段一件事"
+instruction = "每个段落只推进一个意思，不把定位、操作和解释混在同一段"
+scope = "paragraph"
+llm = 1
+
+[[requirements]]
+name = "动作与原因分开"
+instruction = "执行步骤和机制解释不交错，警告单独成段或放进提示框"
+scope = "paragraph"
+llm = 1
+
+[[requirements]]
+name = "用可观察的事实"
+instruction = "结论使用读者能验证的命令、路径、退出码、输出或版本号，而不是“配置一下”这类概括"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "示例可以照抄"
+instruction = "命令与输出可照抄、可观察；默认用法在前，显式参数和边缘情况在后"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "诚实标注范围"
+instruction = "不确定或有条件的结论标明范围（当前版本、在该平台上），做不到、会失败或有代价就直接写"
+scope = "article"
+llm = 1
+
+[[requirements]]
+name = "提醒落在风险点"
+instruction = "只有读者可能失败、丢数据或浪费时间时才给提醒，且不重复正文"
+scope = "article"
+llm = 1
+
+[[scripts]]
+name = "禁用符号"
+code = '''
+import re
+
+BANNED = re.compile(r"[—–‒―−⸺⸻…·•〜～]|\s-\s")
+
+def check(text):
+    return 5 if BANNED.search(text) else 0
+'''
