@@ -21,7 +21,8 @@
     "README.md",
     "skills",
     "templates",
-    "filters"
+    "filters",
+    "README_zh_CN.md"
   ],
   "keywords": [
     "deepseek-harness",

@@ -114,3 +114,7 @@ ype_check(rule: "rule.toml", path: "final.md")
 ```
 
 Paths resolve against the session working directory. Pass `text` instead of `path` for short snippets, and pass `template` instead of `rule` to run a bundled template without writing a file.
+
+## When there is no rule file
+
+If the rule file is missing or is not TOML (a Markdown review spec, a ticket export, a malformed rule), the tool converts it into a valid rule: stated requirements are carried over even when written in prose, malformed TOML is repaired, and the rest is inferred from the article. The check runs with that draft, prints it under "Temporary rule", and adds a warning saying whether it was generated or repaired; it is used once and never saved, which suits projects that cannot keep a rule next to the copy. It costs one extra model call (two at most), and `autoDraftRules: false` turns the fallback off.

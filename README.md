@@ -1,6 +1,8 @@
 # Ype! Writer (`dsh-ype-writer`)
 
-> 本提供了 [中文版本](./README_zh_CN.md)！
+> [!Tip]
+>
+> 中文版见 [README_zh_CN.md](./README_zh_CN.md)。
 
 A DSH article auditor that scores an article paragraph by paragraph against a `rule.toml`. Every rule opens its own LLM session, so the scoring standard is reproducible, reviewable, and committable.
 
@@ -65,6 +67,10 @@ Try it on this README:
 ```text
 ype_check(rule: "readme-review.toml", path: "README.md")
 ```
+
+### Temporary rules
+
+If `rule` points at something that is not valid TOML — a Markdown review spec, a near-miss rule, a broken file — the tool turns it into a valid rule: it keeps the requirements the file states (even in prose or Markdown), repairs a malformed TOML, and infers the rest from the article. The check then runs with that rule, prints it under "Temporary rule" in the report, and adds a warning saying whether the rule was generated or repaired. The draft is never written to disk. This costs one extra model call (two at most, if the first draft fails validation) and is meant for one-off reviews where committing a rule file is not possible. Disable it with `autoDraftRules: false` in the plugin config.
 
 ## Filters
 
@@ -213,6 +219,7 @@ One Python process is started per script and `check` is called once per paragrap
 | `llmTimeoutMs`       | `180000`              | Timeout for one model session                                      |
 | `maxOutputTokens`    | `12000`               | Output limit for one model session                                 |
 | `python`             | `python3`             | Interpreter for script rules                                       |
+| `autoDraftRules`     | `true`                | Draft a temporary rule when the supplied rule file is not parseable TOML |
 | `scriptTimeoutMs`    | `20000`               | Timeout for one script                                             |
 
 ## Cost
@@ -226,13 +233,13 @@ Model calls per check:
 + Σ each rule's llm
 ```
 
-Every session receives the whole article, so token cost is roughly article tokens × session count. With defaults (1 audience, 1 anti-audience, a few rules at 1 each) a check is about 4-8 sessions. Start with one session per rule; add replicas only for rules that matter.
+Every session receives the whole article, so token cost is roughly article tokens × session count. With defaults (1 audience, 1 anti-audience, a few rules at 1 each) a check is about 4-8 sessions. Start with one session per rule; add replicas only for rules that matter. When the rule file cannot be parsed and `autoDraftRules` is on, add one call for the draft (two at most).
 
 ## Implementation and maintenance
 
 - **Zero dependencies**: only Node built-ins and files in this repository. `lib/toml.js` is a TOML subset parser covering tables, arrays of tables, dotted keys, multi-line strings, inline tables, numbers, and dates (returned as source text).
 - **Public APIs only**: registers through `ctx.tools.register`, calls models through `ctx.llm.stream`, never writes session logs or touches private state.
-- **Testable**: `lib/` is split by responsibility (TOML → rule validation → scoring math → model calls → Python → engine → tool entry). 38 `node --test` cases cover parsing, validation, formulas, aggregation, and failure tolerance without network access.
+- **Testable**: `lib/` is split by responsibility (TOML → rule validation → scoring math → model calls → Python → engine → tool entry). 47 `node --test` cases cover parsing, validation, formulas, aggregation, and failure tolerance without network access.
 - **No UI**: the result is a text report. A browser panel could be added as a Client module in the same bundle, rendering `value.paragraphs` / `value.rules` as a table.
 
 Known limitations:
